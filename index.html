@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IntentFlow 意图轨迹 - 您的外置注意力大脑</title>
+    <meta name="description" content="IntentFlow 是一款 Chrome 浏览器插件，利用 AI 自动分析您的浏览意图，将混乱的标签页转化为清晰的思维导图。">
+    <!-- Preload hero image for faster LCP -->
+    <link rel="preload" as="image" href="./homepage.png" fetchpriority="high">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            900: '#0c4a6e',
+                        }
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'fade-in-up': 'fadeInUp 0.8s ease-out forwards',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .aurora-bg {
+            background:
+                radial-gradient(at 0% 0%, hsla(253, 16%, 7%, 1) 0, transparent 50%),
+                radial-gradient(at 50% 0%, hsla(225, 39%, 30%, 1) 0, transparent 50%),
+                radial-gradient(at 100% 0%, hsla(339, 49%, 30%, 1) 0, transparent 50%);
+            background-color: #0f172a;
+        }
+
+        /* Button system */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.2rem;
+            border-radius: 9999px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .15s ease;
+        }
+
+        .btn:focus {
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+            color: #fff;
+            border: none;
+        }
+
+        .btn-ghost {
+            background: rgba(255, 255, 255, 0.06);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #111827;
+            border: 1px solid #e5e7eb;
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        /* Responsive spacing improvements */
+        @media (max-width: 768px) {
+            .hero-ctas {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            #install-guide-top .p-10 {
+                padding: 1.25rem;
+            }
+
+            #install-guide-top .flex {
+                flex-direction: column;
+            }
+        }
+
+        /* Community overlay */
+        .community-overlay {
+            /* display: none; <-- Managed by JS/Opacity now */
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transform: translateY(-10px);
+            transition: all 0.2s ease-out;
+
+            position: absolute;
+            right: 0;
+            top: calc(100% + 16px);
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            color: #f1f5f9;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 340px;
+            z-index: 60;
+            /* animation: fadeIn 0.2s ease-out; <-- Removed to use transition */
+            text-align: left;
+        }
+
+        .community-overlay.active {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Removed simple hover */
+        /* .group:hover .community-overlay { display: block; } */
+
+        .community-overlay a {
+            color: #fff;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .community-overlay a:hover {
+            color: #818cf8;
+        }
+
+        .community-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .community-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .community-icon {
+            width: 24px;
+            height: 24px;
+            color: #94a3b8;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+    </style>
+    <!-- SEO / Open Graph -->
+    <meta property="og:title" content="IntentFlow — AI 驱动的标签页管理与专注工具" />
+    <meta property="og:description" content="IntentFlow 将混乱的标签页转化为可视化任务流，提升专注与效率。" />
+    <meta property="og:image" content="./preview.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+</head>
+
+<body class="font-sans antialiased text-slate-800 bg-slate-50">
+
+    <!-- Navbar -->
+    <nav class="fixed w-full z-50 transition-all duration-300 bg-white/80 backdrop-blur-md border-b border-white/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-2">
+                    <img src="./logo.png" alt="IntentFlow" class="w-8 h-8 rounded-lg shadow-lg object-cover" />
+                    <span class="font-bold text-xl tracking-tight text-slate-900">IntentFlow</span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-8">
+                        <a href="#features"
+                            class="hover:text-indigo-600 transition-colors px-3 py-2 rounded-md text-sm font-medium"
+                            data-i18n="nav_features">功能特性</a>
+                        <a href="#how-it-works"
+                            class="hover:text-indigo-600 transition-colors px-3 py-2 rounded-md text-sm font-medium"
+                            data-i18n="nav_how_it_works">工作原理</a>
+                        <a href="#download"
+                            class="bg-slate-900 text-white hover:bg-slate-800 px-4 py-2 rounded-full text-sm font-medium transition-transform hover:scale-105 shadow-lg"
+                            data-i18n="nav_download">立即下载</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="relative pt-32 pb-20 sm:pt-40 sm:pb-24 overflow-visible aurora-bg text-white">
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center z-10">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-xs font-medium mb-8 animate-fade-in-up"
+                style="animation-delay: 0.1s;">
+                <span class="flex h-2 w-2 rounded-full bg-green-400 animate-pulse"></span>
+                <span data-i18n="version_badge">v1.0.0 正式发布</span>
+            </div>
+
+            <h1 class="text-5xl sm:text-7xl font-extrabold tracking-tight mb-6 leading-tight animate-fade-in-up"
+                style="animation-delay: 0.2s;">
+                您的外置 <br class="hidden sm:block" />
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">注意力大脑</span>
+            </h1>
+
+            <p class="mt-4 max-w-2xl text-xl text-slate-300 mb-10 animate-fade-in-up" style="animation-delay: 0.3s;"
+                data-i18n="hero_desc">
+                利用 AI 自动分析浏览意图，将混乱的标签页瞬间转化为清晰的思维导图。告别信息过载，重获深度思考能力。
+            </p>
+
+            <div class="flex hero-ctas flex-col sm:flex-row gap-4 animate-fade-in-up relative z-50"
+                style="animation-delay: 0.4s;">
+                <a id="add-to-chrome-btn" href="https://chrome.google.com/webstore" data-store="chrome"
+                    class="online-install btn btn-primary items-center gap-3 px-6 py-3 text-base font-bold shadow-xl shadow-indigo-500/20 hover:shadow-indigo-500/40 hover:-translate-y-1"
+                    role="button" aria-label="Add to Chrome">
+                    <!-- Official Chrome Icon -->
+                    <svg t="1768555449801" class="w-6 h-6" viewBox="0 0 1024 1024" version="1.1"
+                        xmlns="http://www.w3.org/2000/svg" p-id="1610" xmlns:xlink="http://www.w3.org/1999/xlink"
+                        width="200" height="200">
+                        <path
+                            d="M123.648 178.346667C361.642667-98.602667 802.986667-43.946667 967.936 279.68h-396.501333c-71.424 0-117.546667-1.621333-167.509334 24.661333-58.709333 30.933333-102.997333 88.234667-118.485333 155.52L123.648 178.389333z"
+                            fill="#EA4335" p-id="1611"></path>
+                        <path
+                            d="M341.674667 512c0 93.866667 76.330667 170.24 170.154666 170.24 93.866667 0 170.154667-76.373333 170.154667-170.24s-76.330667-170.24-170.154667-170.24c-93.866667 0-170.154667 76.373333-170.154666 170.24z"
+                            fill="#4285F4" p-id="1612"></path>
+                        <path
+                            d="M577.877333 734.848c-95.530667 28.373333-207.274667-3.114667-268.501333-108.8-46.762667-80.64-170.24-295.765333-226.346667-393.557333-196.565333 301.226667-27.136 711.808 329.685334 781.866666l165.12-279.509333z"
+                            fill="#34A853" p-id="1613"></path>
+                        <path
+                            d="M669.866667 341.76a233.130667 233.130667 0 0 1 43.008 286.634667c-40.576 69.973333-170.154667 288.682667-232.96 394.581333 367.658667 22.656 635.733333-337.664 514.645333-681.258667H669.866667z"
+                            fill="#FBBC05" p-id="1614"></path>
+                    </svg>
+                    <span data-i18n="add_to_chrome" class="font-bold">添加到 Chrome</span>
+                </a>
+                <a id="download-offline-zip" href="./IntentFlow-V1.5.5.zip" download="IntentFlow-V1.5.5.zip"
+                    class="btn btn-ghost items-center gap-2 px-6 py-3 text-base font-bold border-white/20 hover:bg-white/10"
+                    role="button" aria-label="Download offline package">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                    <span data-i18n="download_offline">下载离线安装包</span>
+                </a>
+                <div class="relative group">
+                    <button id="join-community-hero"
+                        class="btn btn-outline text-white border-white/30 hover:bg-white/10 px-6 py-3 text-base font-bold gap-2"
+                        aria-haspopup="true" aria-expanded="false">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                        <span data-i18n="join_community">加入社群</span>
+                    </button>
+                    <div class="community-overlay" role="dialog" aria-label="Join community">
+                        <!-- Email -->
+                        <div class="community-item">
+                            <svg class="community-icon" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                            <div>
+                                <div class="text-xs text-slate-400 font-medium mb-1" data-i18n="contact_email_label">邮箱
+                                </div>
+                                <a href="mailto:Liushuangguang007@gmail.com"
+                                    class="text-sm font-medium hover:text-indigo-400 break-all transition-colors block">Liushuangguang007@gmail.com</a>
+                            </div>
+                        </div>
+
+                        <!-- Discord -->
+                        <div class="community-item border-t border-white/10 pt-4">
+                            <svg class="community-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.085 2.157 2.419 0 1.334-.956 2.419-2.157 2.419zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.085 2.157 2.419 0 1.334-.946 2.419-2.157 2.419z" />
+                            </svg>
+                            <div>
+                                <div class="text-xs text-slate-400 font-medium mb-1" data-i18n="discord_label">Discord
+                                </div>
+                                <a href="https://discord.gg/KhXZH3dmb" target="_blank" rel="noopener noreferrer"
+                                    class="text-sm font-medium hover:text-indigo-400 transition-colors block">Join
+                                    Server &rarr;</a>
+                            </div>
+                        </div>
+
+                        <!-- WeChat/QR -->
+                        <div class="community-item border-t border-white/10 pt-4">
+                            <svg class="community-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd"
+                                    d="M16 1.5c-4.4 0-8 3-8 7 0 1.4.5 2.7 1.3 3.8-.2.6-.8 1.6-1.2 2 .5.1 1.7.2 2.7-.4 1.5 1 3.3 1.6 5.2 1.6 4.4 0 8-3 8-7s-3.6-7-8-7zM7.5 7.8c0-.4.4-.8.8-.8.5 0 .8.4.8.8 0 .5-.4.8-.8.8-.5 0-.8-.4-.8-.8zm5 0c0-.4.4-.8.8-.8.5 0 .8.4.8.8 0 .5-.4.8-.8.8-.5 0-.8-.4-.8-.8zM7 11.5c-3.6 0-6.5 2.5-6.5 5.5 0 1.9 1.2 3.6 3 4.6-.2 1-.6 1.8-1 2.2 1.8 0 2.6-.9 3-1.3l.5.3c.7.3 1.5.5 2.3.5l-.3-1.6c-2.3-.2-4-2-4-4.2 0-2.5 2.2-4.5 5-4.5h4c-.5-.9-1-2-1.5-2H7zm-3.5 5.8c-.4 0-.8-.4-.8-.8 0-.5.4-.8.8-.8.5 0 .8.4.8.8 0 .5-.4.8-.8.8zm4 0c-.4 0-.8-.4-.8-.8 0-.5.4-.8.8-.8.5 0 .8.4.8.8 0 .5-.4.8-.8.8z" />
+                            </svg>
+                            <div class="flex-1 w-full">
+                                <div class="text-xs text-slate-400 font-medium mb-2" data-i18n="join_community_title">
+                                    加入微信群</div>
+                                <div class="flex gap-3">
+                                    <div class="text-center">
+                                        <div class="bg-white p-2 rounded-lg inline-block">
+                                            <img src="./群二维码截图.png" alt="群二维码" class="w-24 h-24 object-contain">
+                                        </div>
+                                        <div class="text-[10px] text-slate-300 mt-1">群二维码</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="bg-white p-2 rounded-lg inline-block">
+                                            <img src="./开发者微信.png" alt="开发者微信" class="w-24 h-24 object-contain">
+                                        </div>
+                                        <div class="text-[10px] text-slate-300 mt-1">个人二维码</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Preview (3D Float Effect) -->
+            <div class="mt-20 relative w-full max-w-5xl animate-float">
+                <div class="absolute -inset-1 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-xl blur opacity-30">
+                </div>
+                <div
+                    class="relative bg-slate-900/80 backdrop-blur-xl rounded-xl border border-white/10 shadow-2xl overflow-hidden aspect-[16/9] group">
+                    <img src="./homepage.png" alt="IntentFlow Dashboard Preview"
+                        class="w-full h-full object-cover opacity-90 hover:opacity-100 transition-opacity duration-700"
+                        loading="eager" fetchpriority="high" decoding="async" width="1280" height="720" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Background Grid -->
+        <div
+            class="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-soft-light pointer-events-none">
+        </div>
+        <!-- 安装引导（靠上显示） -->
+        <section id="install-guide-top" class="mt-12 w-full">
+            <!-- Installing Guide (Top) -->
+            <div class="max-w-6xl mx-auto">
+                <div
+                    class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-2xl p-10 shadow-2xl flex flex-col md:flex-row gap-8 items-start relative overflow-hidden">
+                    <!-- Decorative circles -->
+                    <div class="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 rounded-full bg-white/5 blur-3xl"></div>
+                    <div
+                        class="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-indigo-900/20 blur-3xl">
+                    </div>
+
+                    <!-- Left: Chrome / Edge Icons & Desc -->
+                    <div class="w-full md:w-1/2 flex flex-col items-center text-center z-10">
+                        <h3 class="text-3xl font-extrabold mb-6" data-i18n="online_install_title">在线安装插件</h3>
+                        <div class="flex items-center gap-8 my-4">
+                            <!-- Official Chrome SVG -->
+                            <div class="flex flex-col items-center gap-3 group">
+                                <div
+                                    class="bg-white p-4 rounded-full shadow-lg transition-transform transform group-hover:scale-110">
+                                    <svg t="1768555449801" class="w-16 h-16" viewBox="0 0 1024 1024" version="1.1"
+                                        xmlns="http://www.w3.org/2000/svg" p-id="1610"
+                                        xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200">
+                                        <path
+                                            d="M123.648 178.346667C361.642667-98.602667 802.986667-43.946667 967.936 279.68h-396.501333c-71.424 0-117.546667-1.621333-167.509334 24.661333-58.709333 30.933333-102.997333 88.234667-118.485333 155.52L123.648 178.389333z"
+                                            fill="#EA4335" p-id="1611"></path>
+                                        <path
+                                            d="M341.674667 512c0 93.866667 76.330667 170.24 170.154666 170.24 93.866667 0 170.154667-76.373333 170.154667-170.24s-76.330667-170.24-170.154667-170.24c-93.866667 0-170.154667 76.373333-170.154666 170.24z"
+                                            fill="#4285F4" p-id="1612"></path>
+                                        <path
+                                            d="M577.877333 734.848c-95.530667 28.373333-207.274667-3.114667-268.501333-108.8-46.762667-80.64-170.24-295.765333-226.346667-393.557333-196.565333 301.226667-27.136 711.808 329.685334 781.866666l165.12-279.509333z"
+                                            fill="#34A853" p-id="1613"></path>
+                                        <path
+                                            d="M669.866667 341.76a233.130667 233.130667 0 0 1 43.008 286.634667c-40.576 69.973333-170.154667 288.682667-232.96 394.581333 367.658667 22.656 635.733333-337.664 514.645333-681.258667H669.866667z"
+                                            fill="#FBBC05" p-id="1614"></path>
+                                    </svg>
+                                </div>
+                                <div class="font-bold">Chrome</div>
+                            </div>
+                            <!-- Official Edge SVG -->
+                            <div class="flex flex-col items-center gap-3 group">
+                                <div
+                                    class="bg-white p-4 rounded-full shadow-lg transition-transform transform group-hover:scale-110">
+                                    <svg t="1768560526053" class="w-16 h-16" viewBox="0 0 1024 1024" version="1.1"
+                                        xmlns="http://www.w3.org/2000/svg" p-id="3741"
+                                        xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200">
+                                        <path
+                                            d="M208.979592 1024h606.040816c115.461224 0 208.979592-93.518367 208.979592-208.979592V208.979592C1024 93.518367 930.481633 0 815.020408 0H208.979592C93.518367 0 0 93.518367 0 208.979592v606.040816c0 115.461224 93.518367 208.979592 208.979592 208.979592z"
+                                            fill="#FFFFFF" p-id="3742"></path>
+                                        <path
+                                            d="M833.410612 696.560327c-8.045714-8.672653-19.748571 1.149388-61.022041 18.181224-41.482449 17.031837-119.013878 19.330612-171.258775 3.657143s-129.044898-42.631837-170.631837-146.599184c-9.717551-24.137143-20.48-78.576327 7.000817-114.729796 27.376327-36.362449 80.770612-56.21551 130.194285-24.137143 51.30449 33.541224 49.214694 89.129796 32.705306 118.17796-5.32898 8.986122-9.090612 15.046531-12.120816 19.226122 31.242449-2.089796 65.515102-11.389388 75.128163-40.228571 18.912653-56.42449-56.737959-282.540408-321.724081-263.732245-44.408163 3.134694-81.92 3.134694-113.475919 0.731428a388.743837 388.743837 0 0 0-75.337143 136.254694c-57.887347 180.349388 39.497143 360.594286 178.573062 438.125714 91.219592 50.886531 323.291429 108.878367 496.43102-114.938775 7.941224-11.389388 13.583673-21.315918 5.537959-29.988571z"
+                                            fill="#0985D9" p-id="3743"></path>
+                                        <path
+                                            d="M828.635429 726.433959c7.941224-11.284898 13.583673-21.211429 5.433469-29.988571-7.941224-8.568163-19.644082 1.149388-60.917551 18.285714-41.482449 17.031837-119.013878 19.330612-171.258776 3.657143s-129.044898-42.631837-170.736326-146.599184c-9.613061-24.137143-20.37551-78.576327 7.000816-114.729796 4.075102-5.32898 8.359184-10.24 13.270204-14.733061-74.919184 51.40898-122.462041 136.254694-105.743673 236.251429 19.435102 116.297143 100.101224 180.558367 158.61551 191.947755 35.84 6.896327 68.963265 13.270204 110.654694 5.328979 0.313469-0.10449 0.940408-0.10449 1.567347-0.313469 71.88898-19.644082 146.181224-63.947755 212.009796-149.106939h0.10449z"
+                                            fill="#0F4F94" p-id="3744"></path>
+                                        <path
+                                            d="M567.713959 139.180408c-171.885714-22.674286-352.548571 70.844082-414.82449 264.150204-10.34449 31.764898-15.986939 64.783673-16.822857 98.220408 3.030204-27.376327 10.03102-56.946939 26.644898-85.786122 50.468571-87.980408 174.706939-123.402449 251.715919-108.773878 24.032653 4.388571 47.229388 12.120816 69.067755 22.987756 57.887347-45.97551 89.338776-117.342041 84.218775-190.902858v0.10449z"
+                                            fill="#34C1EF" p-id="3745"></path>
+                                        <path
+                                            d="M841.278694 584.620408c62.589388-62.798367 49.946122-148.897959 33.332245-196.440816a397.562776 397.562776 0 0 0-90.697143-143.36 448.825469 448.825469 0 0 1-173.348572 270.210612 82.411102 82.411102 0 0 1-10.24 36.04898c-11.702857 20.37551-16.822857 25.286531-18.912653 28.003265-2.089796 2.925714-14.001633 15.673469 7.000817 28.630204 20.793469 12.852245 43.154286 26.017959 88.816326 28.316735 45.348571 2.507755 111.804082 0.940408 164.04898-51.51347v0.10449z"
+                                            fill="#33C773" p-id="3746"></path>
+                                        <path
+                                            d="M590.085224 142.691265c-7.523265-1.567347-14.942041-2.612245-22.465306-3.552653 5.12 73.560816-26.331429 144.927347-84.218775 190.902857 35.422041 17.867755 59.977143 42.213878 83.069388 69.276735 21.524898 25.913469 35.94449 56.842449 42.004898 89.965714 0 0.10449 0.20898 0.522449 0.208979 0.940409 1.880816 8.463673 2.507755 16.927347 1.880816 24.868571a449.410612 449.410612 0 0 0 173.348572-270.210612v-0.20898c-44.094694-44.512653-106.579592-85.263673-193.828572-101.982041z"
+                                            fill="#3CCFA2" p-id="3747"></path>
+                                    </svg>
+                                </div>
+                                <div class="font-bold">Edge</div>
+                            </div>
+                        </div>
+                        <p class="mt-4 text-base text-white/90 max-w-md mx-auto leading-relaxed"
+                            data-i18n="online_install_desc">点击“在线安装”可直接跳转 Chrome 应用商店或 Microsoft Edge
+                            插件页进行一键安装（目前线上版在审核中，请关注下方提示）。</p>
+                        <button
+                            class="mt-8 inline-flex online-install btn bg-white text-indigo-600 hover:bg-slate-50 hover:scale-105 shadow-xl font-bold px-8 py-3 rounded-full transition-all"
+                            data-store="chrome" id="install-online-top" data-i18n="online_install_button"
+                            aria-label="Online install">在线安装</button>
+                    </div>
+
+                    <!-- Right: Local Install Steps -->
+                    <div class="w-full md:w-1/2 md:pl-8 md:border-l border-white/20 z-10">
+                        <h3 class="text-2xl font-bold mb-6" data-i18n="local_install_title">本地安装插件</h3>
+                        <ol class="list-decimal list-inside space-y-3 text-white/90 mb-8 leading-relaxed">
+                            <li data-i18n="local_step_1">下载离线安装包：<strong>IntentFlow-V1.5.5.zip</strong></li>
+                            <li data-i18n="local_step_2">在浏览器地址栏输入 chrome://extensions 打开扩展管理页面；</li>
+                            <li data-i18n="local_step_3">右上角开启 开发者模式；</li>
+                            <li data-i18n="local_step_4">解压下载的 .zip 并记下解压后的文件夹路径；</li>
+                            <li data-i18n="local_step_5">点击 加载已解压的扩展程序，选择解压后的文件夹；</li>
+                            <li data-i18n="local_step_6">安装完成后固定插件图标即可使用。</li>
+                        </ol>
+                        <div class="flex flex-wrap md:flex-nowrap items-center gap-3">
+                            <a id="download-offline-top" href="./IntentFlow-V1.5.5.zip" download="IntentFlow-V1.5.5.zip"
+                                class="inline-flex items-center gap-2 px-5 py-3 bg-white/10 hover:bg-white/20 border border-white/30 rounded-lg transition-colors font-medium">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                    <polyline points="7 10 12 15 17 10" />
+                                    <line x1="12" y1="15" x2="12" y2="3" />
+                                </svg>
+                                <span data-i18n="download_file_btn">下载文件</span>
+                            </a>
+                            <a href="https://www.bilibili.com/video/BV1Gs2EYaEk8/?spm_id_from=333.337.search-card.all.click&vd_source=8198062d676fc9b51abd2d0d3a5ec9dc"
+                                target="_blank" rel="noopener noreferrer"
+                                class="inline-flex items-center gap-2 px-5 py-3 bg-white text-indigo-900 hover:bg-indigo-50 rounded-lg font-bold shadow-md transition-colors">
+                                <span data-i18n="view_tutorial_btn">查看安装教程</span>
+                            </a>
+                            <div class="relative group">
+                                <button
+                                    class="btn border border-white/30 text-white hover:bg-white/10 px-5 py-3 rounded-lg"
+                                    aria-haspopup="true" aria-expanded="false" data-i18n="join_community">加入社群</button>
+                                <div class="community-overlay" role="dialog" aria-label="Join community"
+                                    style="bottom: 100%; top: auto; margin-bottom: 10px;">
+                                    <!-- Email -->
+                                    <div class="community-item">
+                                        <svg class="community-icon" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                        </svg>
+                                        <div>
+                                            <div class="text-xs text-slate-400 font-medium mb-1"
+                                                data-i18n="contact_email_label">邮箱</div>
+                                            <a href="mailto:Liushuangguang007@gmail.com"
+                                                class="text-sm font-medium hover:text-indigo-400 break-all transition-colors block">Liushuangguang007@gmail.com</a>
+                                        </div>
+                                    </div>
+
+                                    <!-- Discord -->
+                                    <div class="community-item border-t border-white/10 pt-4">
+                                        <svg class="community-icon" width="24" height="24" viewBox="0 0 24 24"
+                                            fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                            <path
+                                                d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.085 2.157 2.419 0 1.334-.956 2.419-2.157 2.419zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.085 2.157 2.419 0 1.334-.946 2.419-2.157 2.419z" />
+                                        </svg>
+                                        <div>
+                                            <div class="text-xs text-slate-400 font-medium mb-1"
+                                                data-i18n="discord_label">Discord</div>
+                                            <a href="https://discord.gg/KhXZH3dmb" target="_blank"
+                                                rel="noopener noreferrer"
+                                                class="text-sm font-medium hover:text-indigo-400 transition-colors block">Join
+                                                Server &rarr;</a>
+                                        </div>
+                                    </div>
+
+                                    <!-- WeChat/QR -->
+                                    <div class="community-item border-t border-white/10 pt-4">
+                                        <svg class="community-icon" width="24" height="24" viewBox="0 0 24 24"
+                                            fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                            <path fill-rule="evenodd" clip-rule="evenodd"
+                                                d="M16 1.5c-4.4 0-8 3-8 7 0 1.4.5 2.7 1.3 3.8-.2.6-.8 1.6-1.2 2 .5.1 1.7.2 2.7-.4 1.5 1 3.3 1.6 5.2 1.6 4.4 0 8-3 8-7s-3.6-7-8-7zM7.5 7.8c0-.4.4-.8.8-.8.5 0 .8.4.8.8 0 .5-.4.8-.8.8-.5 0-.8-.4-.8-.8zm5 0c0-.4.4-.8.8-.8.5 0 .8.4.8.8 0 .5-.4.8-.8.8-.5 0-.8-.4-.8-.8zM7 11.5c-3.6 0-6.5 2.5-6.5 5.5 0 1.9 1.2 3.6 3 4.6-.2 1-.6 1.8-1 2.2 1.8 0 2.6-.9 3-1.3l.5.3c.7.3 1.5.5 2.3.5l-.3-1.6c-2.3-.2-4-2-4-4.2 0-2.5 2.2-4.5 5-4.5h4c-.5-.9-1-2-1.5-2H7zm-3.5 5.8c-.4 0-.8-.4-.8-.8 0-.5.4-.8.8-.8.5 0 .8.4.8.8 0 .5-.4.8-.8.8zm4 0c-.4 0-.8-.4-.8-.8 0-.5.4-.8.8-.8.5 0 .8.4.8.8 0 .5-.4.8-.8.8z" />
+                                        </svg>
+                                        <div class="flex-1 w-full">
+                                            <div class="text-xs text-slate-400 font-medium mb-2"
+                                                data-i18n="join_community_title">
+                                                加入微信群</div>
+                                            <div class="flex gap-3">
+                                                <div class="text-center">
+                                                    <div class="bg-white p-2 rounded-lg inline-block">
+                                                        <img src="./群二维码截图.png" alt="群二维码"
+                                                            class="w-24 h-24 object-contain">
+                                                    </div>
+                                                    <div class="text-[10px] text-slate-300 mt-1">群二维码</div>
+                                                </div>
+                                                <div class="text-center">
+                                                    <div class="bg-white p-2 rounded-lg inline-block">
+                                                        <img src="./开发者微信.png" alt="开发者微信"
+                                                            class="w-24 h-24 object-contain">
+                                                    </div>
+                                                    <div class="text-[10px] text-slate-300 mt-1">个人二维码</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="mt-4 text-xs text-white/50" data-i18n="local_install_warning">*
+                            本地安装的文件夹请勿删除，否则扩展将无法正常运行。</p>
+                    </div>
+                </div>
+                <!-- Contact Info -->
+                <!-- Detailed Contact Info (Replaces simple row) -->
+                <!-- Detailed Contact Info removed as requested (now in overlay) -->
+            </div>
+        </section>
+    </div>
+
+    <!-- Stats Section removed per request -->
+
+    <!-- Problem vs Solution -->
+    <div class="py-24 bg-slate-50" id="how-it-works">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-slate-900 sm:text-4xl" data-i18n="why_use_title">为什么要使用 IntentFlow？
+                </h2>
+                <p class="mt-4 text-xl text-slate-500" data-i18n="why_use_desc">从被动接收信息，转变为主动管理认知。</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <!-- The Chaos -->
+                <div
+                    class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden group hover:border-red-200 transition-colors">
+                    <div
+                        class="absolute top-0 right-0 p-4 opacity-10 font-mono text-8xl font-bold text-red-500 rotate-12 select-none">
+                        CHAOS</div>
+                    <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2 mb-4" data-i18n="chaos_title">
+                        <span class="p-2 bg-red-100 text-red-600 rounded-lg"><svg xmlns="http://www.w3.org/2000/svg"
+                                width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path
+                                    d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                                <line x1="12" y1="9" x2="12" y2="13" />
+                                <line x1="12" y1="17" x2="12.01" y2="17" />
+                            </svg></span>
+                        现在的浏览器
+                    </h3>
+                    <ul class="space-y-3 text-slate-600">
+                        <li class="flex items-start gap-2">
+                            <span class="text-red-500 mt-1">✕</span>
+                            <span data-i18n="chaos_item_1">打开数十个标签页，完全忘记了初衷。</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-red-500 mt-1">✕</span>
+                            <span data-i18n="chaos_item_2">多任务并行，注意力被碎片化，效率低下。</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-red-500 mt-1">✕</span>
+                            <span data-i18n="chaos_item_3">大量内存占用，浏览器卡顿。</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- The Order -->
+                <div
+                    class="bg-white p-8 rounded-2xl shadow-xl border border-indigo-100 relative overflow-hidden group hover:border-indigo-300 transition-colors">
+                    <div
+                        class="absolute top-0 right-0 p-4 opacity-10 font-mono text-8xl font-bold text-indigo-500 -rotate-6 select-none">
+                        FLOW</div>
+                    <div
+                        class="absolute inset-0 bg-gradient-to-br from-indigo-50/50 to-purple-50/50 pointer-events-none">
+                    </div>
+                    <h3 class="text-xl font-bold text-indigo-900 flex items-center gap-2 mb-4 relative z-10"
+                        data-i18n="order_title">
+                        <span class="p-2 bg-indigo-100 text-indigo-600 rounded-lg"><svg
+                                xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                                <polyline points="22 4 12 14.01 9 11.01" />
+                            </svg></span>
+                        有了 IntentFlow
+                    </h3>
+                    <ul class="space-y-3 text-slate-700 relative z-10">
+                        <li class="flex items-start gap-2">
+                            <span class="text-green-500 font-bold mt-1">✓</span>
+                            <span data-i18n="order_item_1">AI 自动识别浏览意图，按任务自动分组。</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-green-500 font-bold mt-1">✓</span>
+                            <span data-i18n="order_item_2">思维可视化，一眼看清思考路径。</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-green-500 font-bold mt-1">✓</span>
+                            <span data-i18n="order_item_3">一键完成/归档任务，保持工作台清爽。</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Grid -->
+    <div class="py-24 bg-white" id="features">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <span class="text-indigo-600 font-bold tracking-wide uppercase text-sm"
+                    data-i18n="features_subtitle">核心功能</span>
+                <h2 class="mt-2 text-3xl font-bold text-slate-900 sm:text-4xl" data-i18n="features_title">不仅仅是标签页管理工具
+                </h2>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="p-6 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-colors">
+                    <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M12 16v-4" />
+                            <path d="M12 8h.01" />
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900 mb-2" data-i18n="feature1_title">AI 意图深度解析</h3>
+                    <p class="text-slate-600" data-i18n="feature1_desc">不仅根据域名，更根据页面内容深度分析您的真实意图（如“正在解决 Bug” vs “正在学习
+                        React”）。</p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="p-6 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-colors">
+                    <div
+                        class="w-12 h-12 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900 mb-2" data-i18n="feature2_title">思维知识沉淀</h3>
+                    <p class="text-slate-600" data-i18n="feature2_desc">即使关闭了网页，您的思考路径也会被保留。支持将任务导出为 Markdown 或
+                        PDF，沉淀为永久知识。</p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="p-6 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-colors">
+                    <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900 mb-2" data-i18n="feature3_title">隐私安全至上</h3>
+                    <p class="text-slate-600" data-i18n="feature3_desc">所有数据默认本地存储。AI 分析仅处理您主动打开的页面文本。支持离线模式，完全阻断网络请求。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA Section -->
+    <div class="bg-slate-900 text-white" id="download">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
+            <h2 class="text-3xl font-bold sm:text-4xl mb-6" data-i18n="cta_title">准备好升级您的大脑了吗？</h2>
+            <p class="text-xl text-slate-400 mb-10 max-w-2xl mx-auto" data-i18n="cta_desc">
+                以插件的形式，无缝集成到您的工作流中。今天就开始体验更清晰的数字生活。</p>
+
+            <!-- <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="#" class="btn btn-primary" data-i18n="cta_install" role="button"
+                    aria-label="Install extension">免费安装插件</a>
+                <a href="#" class="btn btn-outline" data-i18n="cta_changelog" role="button"
+                    aria-label="View changelog">查看更新日志</a>
+            </div> -->
+            <p class="mt-6 text-sm text-slate-500" data-i18n="cta_browser_support">支持 Chrome / Edge / Arc 浏览器 • v1.0.0
+                Stable</p>
+        </div>
+    </div>
+
+    <footer class="bg-gray-50 border-t border-gray-200">
+        <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                <div class="flex items-center gap-2">
+                    <img src="./logo.png" alt="IntentFlow" class="w-6 h-6 rounded-lg object-cover" />
+                    <span class="font-bold text-slate-900">IntentFlow</span>
+                </div>
+
+                <div class="flex gap-8 text-sm text-slate-500 items-center">
+                    <a href="./privacy.html" class="hover:text-slate-900 transition-colors" data-i18n="privacy">隐私协议</a>
+                    <a href="mailto:Liushuangguang007@gmail.com"
+                        class="hover:text-slate-900 transition-colors">Liushuangguang007@gmail.com</a>
+                    <a href="https://discord.gg/KhXZH3dmb" target="_blank" rel="noopener noreferrer"
+                        class="hover:text-slate-900 transition-colors">Discord</a>
+                </div>
+
+                <div class="text-sm text-slate-400">
+                    &copy; 2026 IntentFlow. All rights reserved.
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+            (function () {
+                // 强制下载处理（用于本地 zip 下载）
+                function forceDownload(href, filename) {
+                    const a = document.createElement('a');
+                    a.href = href;
+                    a.download = filename || '';
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                }
+
+                // 下载按钮（顶部与安装区）的兼容处理
+                const downloadButtons = document.querySelectorAll('a[href$=".zip"][download]');
+                downloadButtons.forEach(btn => {
+                    btn.addEventListener('click', function (e) {
+                        // let native behavior happen when opening from file:// sometimes fails, so force
+                        e.preventDefault();
+                        const href = btn.getAttribute('href');
+                        const filename = btn.getAttribute('download') || href.split('/').pop();
+                        forceDownload(href, filename);
+                    });
+                });
+
+                // 在线安装提示模态
+                function showInstallPendingModal() {
+                    if (document.getElementById('install-pending-modal')) return;
+                    const lang = document.documentElement.lang && document.documentElement.lang.startsWith('en') ? 'en' : 'zh';
+                    const title = (translations[lang] && translations[lang].install_pending_title) || '拓展将在近期上线';
+                    const body = (translations[lang] && translations[lang].install_pending_body) || '拓展正在审核中，未来几天上线，敬请关注。';
+                    const btnText = (translations[lang] && translations[lang].install_pending_button) || '知道了';
+                    const overlay = document.createElement('div');
+                    overlay.id = 'install-pending-modal';
+                    overlay.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50';
+                    overlay.innerHTML = `
+                    <div class="bg-white rounded-lg max-w-md p-6 text-center">
+                        <h3 class="text-lg font-bold mb-3">${title}</h3>
+                        <p class="mb-4">${body}</p>
+                        <button id="install-pending-close" class="px-4 py-2 bg-indigo-600 text-white rounded">${btnText}</button>
+                    </div>
+                `;
+                    document.body.appendChild(overlay);
+                    document.getElementById('install-pending-close').addEventListener('click', () => {
+                        overlay.remove();
+                    });
+                }
+
+                // 截获指向 Chrome 商店 / 在线安装的按钮，显示提示而非直接跳转
+                const onlineInstallSelectors = document.querySelectorAll('.online-install, a[data-store="chrome"], a[href*="chrome.google.com"]');
+                onlineInstallSelectors.forEach(el => {
+                    el.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        showInstallPendingModal();
+                    });
+                });
+
+                // 语言（中 / 英）切换与基于地区的自动判断（使用 ipapi.co）
+                const translations = {
+                    zh: {
+                        add_to_chrome: '添加到 Chrome',
+                        download_offline: '下载离线安装包',
+                        join_community: '加入社群',
+                        join_community_title: '加入 IntentFlow 社群',
+                        contact_email_label: '邮箱：',
+                        discord_label: 'Discord：',
+                        wechat_label: '开发者微信：',
+                        nav_features: '功能特性',
+                        nav_how_it_works: '工作原理',
+                        nav_download: '立即下载',
+                        version_badge: 'v1.0.0 正式发布',
+                        cta_browser_support: '支持 Chrome / Edge / Arc 浏览器 • v1.0.0 Stable',
+                        online_install_title: '在线安装插件',
+                        online_install_button: '在线安装',
+                        online_install_desc: '点击“在线安装”可直接跳转 Chrome 应用商店或 Microsoft Edge 插件页进行一键安装（目前线上版在审核中，请关注下方提示）。',
+                        download_file_btn: '下载文件',
+                        view_tutorial_btn: '查看安装教程',
+                        local_install_title: '本地安装插件',
+                        local_install_warning: '* 本地安装的文件夹请勿删除，否则扩展将无法正常运行。',
+                        local_steps: '',
+                        privacy: '隐私协议',
+                        hero_title_line1: '您的外置',
+                        hero_title_line2: '注意力大脑',
+                        hero_desc: '利用 AI 自动分析浏览意图，将混乱的标签页瞬间转化为清晰的思维导图。告别信息过载，重获深度思考能力。',
+                        cta_title: '准备好升级您的大脑了吗？',
+                        cta_desc: '以浏览器扩展形式集成，成组管理标签页、专注监督与知识沉淀，重塑您的浏览秩序。',
+                        cta_install: '免费安装插件',
+                        cta_changelog: '查看更新日志'
+                        ,
+                        why_use_title: '浏览器的这些问题，你是否也深受其苦？',
+                        why_use_desc: '从被动接收信息，转变为主动管理认知。',
+                        chaos_title: '现在的浏览器',
+                        chaos_item_1: '你的浏览器是不是堆满了页签？标题挤得看不清，寻找和切换都异常混乱。',
+                        chaos_item_2: '工作时总被其他网页分心，进度缓慢，一天下来仿佛无所作为。',
+                        chaos_item_3: '忙碌一天却不知道产出了什么，缺乏复盘与其相关的问题沉淀。',
+                        order_title: '有了 IntentFlow',
+                        order_item_1: '成组/任务式管理页签。支持按任务查看，一键关闭整组相关页签。',
+                        order_item_2: '智能监督与提醒。时刻助你锁定主线任务，拒绝无察觉的走神。',
+                        order_item_3: '意图轨迹可视化。清晰呈现完成路径，复盘问题，沉淀知识。',
+                        features_subtitle: '核心功能',
+                        features_title: '不仅仅是标签页管理工具',
+                        feature1_title: 'AI 意图深度解析',
+                        feature1_desc: '通过页面内容智能识别意图并自动将页签归类到任务流，减少手动整理成本。',
+                        feature2_title: '知识归档与复盘',
+                        feature2_desc: '支持将任务流导出为 Markdown、PDF，形成可复用的知识沉淀与复盘记录。',
+                        feature3_title: '隐私安全至上',
+                        feature3_desc: '本地优先，必要时进行脱敏处理，绝不出售您的浏览记录。'
+                        ,
+                        cta_browser_support: '支持 Chrome / Edge / Arc 浏览器 • v1.0.0 Stable',
+                        footer_brand: 'IntentFlow',
+                        contact_email: 'Liushuangguang007@gmail.com',
+                        discord_link: 'Discord',
+                        footer_copyright: '&copy; 2026 IntentFlow. All rights reserved.'
+                        ,
+                        local_step_1: '下载离线安装包：IntentFlow-V1.5.5.zip',
+                        local_step_2: '在浏览器地址栏输入 chrome://extensions 打开扩展管理页面；',
+                        local_step_3: '右上角开启 开发者模式；',
+                        local_step_4: '解压下载的 .zip 并记下解压后的文件夹路径；',
+                        local_step_5: '点击加载已解压的扩展程序，选择解压后的文件夹；',
+                        local_step_6: '安装完成后固定插件图标即可使用。'
+                        ,
+                        install_pending_title: '拓展将在近期上线',
+                        install_pending_body: '拓展正在审核中，未来几天上线，敬请关注。',
+                        install_pending_button: '知道了'
+                    },
+                    en: {
+                        add_to_chrome: 'Add to Chrome',
+                        download_offline: 'Download Offline Package',
+                        join_community: 'Join Community',
+                        join_community_title: 'Join IntentFlow Community',
+                        contact_email_label: 'Email:',
+                        discord_label: 'Discord:',
+                        wechat_label: 'WeChat:',
+                        nav_features: 'Features',
+                        nav_how_it_works: 'How it Works',
+                        nav_download: 'Download',
+                        version_badge: 'v1.0.0 Official Release',
+                        cta_browser_support: 'Supports Chrome / Edge / Arc browsers • v1.0.0 Stable',
+                        online_install_title: 'Install via Web Store',
+                        online_install_button: 'Install Online',
+                        online_install_desc: 'Click "Install Online" to go to the Chrome Web Store or Microsoft Edge Add-ons page (Currently under review, stay tuned).',
+                        download_file_btn: 'Download File',
+                        view_tutorial_btn: 'View Tutorial',
+                        local_install_title: 'Local Installation',
+                        local_install_warning: '* Do not delete the local installation folder, otherwise the extension will stop working.',
+                        local_steps: '',
+                        privacy: 'Privacy',
+                        hero_title_line1: 'Your external',
+                        hero_title_line2: 'Attention Brain',
+                        hero_desc: 'Leverage AI to automatically analyze browsing intent, instantly transforming chaotic tabs into clear mind maps. Say goodbye to information overload and regain deep thinking ability.',
+                        cta_title: 'Ready to upgrade your brain?',
+                        cta_desc: 'Integrate as a browser extension to manage tabs in groups, supervise focus, and settle knowledge, reshaping your browsing order.',
+                        cta_install: 'Install Extension',
+                        cta_changelog: 'View Changelog'
+                        ,
+                        why_use_title: 'Have you noticed these browser issues?',
+                        why_use_desc: 'Shift from passive consumption to active cognitive management.',
+                        chaos_title: 'The current browser',
+                        chaos_item_1: 'Is your browser full of tabs? Titles are unreadable, and finding and switching tabs is chaotic.',
+                        chaos_item_2: 'Constantly distracted by other web pages while working, progress is slow, and it feels like nothing was accomplished at the end of the day.',
+                        chaos_item_3: 'Busy all day but unsure what was produced, lacking review and related problem settlement.',
+                        order_title: 'With IntentFlow',
+                        order_item_1: 'Group/Task-based tab management. View by task, close entire groups of related tabs with one click.',
+                        order_item_2: 'Smart supervision and reminders. Always help you stay on the main task, refusing unconscious distractions.',
+                        order_item_3: 'Visualize intent trajectory. Clearly present the completion path, review issues, and settle knowledge.',
+                        features_subtitle: 'Core Features',
+                        features_title: 'More than a tab manager',
+                        feature1_title: 'Deep AI intent analysis',
+                        feature1_desc: 'Analyzes page content (not only domains) and automatically groups related tabs into task flows.',
+                        feature2_title: 'Knowledge & review',
+                        feature2_desc: 'Export task flows as Markdown or PDF to preserve insights and revisit progress over time.',
+                        feature3_title: 'Privacy-first design',
+                        feature3_desc: 'Local-first storage with minimal, anonymized processing when needed; we never sell your browsing data.'
+                        ,
+                        cta_browser_support: 'Supports Chrome / Edge / Arc browsers • v1.0.0 Stable',
+                        footer_brand: 'IntentFlow',
+                        contact_email: 'Liushuangguang007@gmail.com',
+                        discord_link: 'Discord',
+                        footer_copyright: '&copy; 2026 IntentFlow. All rights reserved.'
+                        ,
+                        local_step_1: 'Download offline package: IntentFlow-V1.5.5.zip',
+                        local_step_2: 'Open chrome://extensions in the browser address bar to open the Extensions page;',
+                        local_step_3: 'Enable Developer mode (top-right);',
+                        local_step_4: 'Unzip the downloaded .zip and note the extracted folder path;',
+                        local_step_5: 'Click "Load unpacked" and select the extracted folder;',
+                        local_step_6: 'Pin the extension icon after installation to start using it.'
+                        ,
+                        install_pending_title: 'Extension coming soon',
+                        install_pending_body: 'The extension is under review and will be available in the coming days. Stay tuned.',
+                        install_pending_button: 'Got it'
+                    }
+                };
+
+                function applyLanguage(lang) {
+                    lang = lang === 'en' ? 'en' : 'zh';
+                    // set lang attribute on html
+                    document.documentElement.lang = (lang === 'en') ? 'en-US' : 'zh-CN';
+                    document.querySelectorAll('[data-i18n]').forEach(el => {
+                        const key = el.getAttribute('data-i18n');
+                        if (!key) return;
+                        const txt = translations[lang][key];
+                        if (txt !== undefined && txt !== '') el.textContent = txt;
+                    });
+                    // hero special fields
+                    const heroH1 = document.querySelector('h1');
+                    if (heroH1) {
+                        heroH1.innerHTML = (lang === 'en')
+                            ? `${translations.en.hero_title_line1} <br class="hidden sm:block" /><span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">${translations.en.hero_title_line2}</span>`
+                            : `${translations.zh.hero_title_line1} <br class="hidden sm:block" /><span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">${translations.zh.hero_title_line2}</span>`;
+                    }
+                    const heroP = document.querySelector('p[data-i18n="hero_desc"]'); // Refined selector
+                    if (heroP) heroP.textContent = (lang === 'en') ? translations.en.hero_desc : translations.zh.hero_desc;
+
+                    // CTA
+                    const ctaTitle = document.querySelector('#download h2');
+                    if (ctaTitle) ctaTitle.textContent = (lang === 'en') ? translations.en.cta_title : translations.zh.cta_title;
+                    const ctaDesc = document.querySelector('#download p.text-xl');
+                    if (ctaDesc) ctaDesc.textContent = (lang === 'en') ? translations.en.cta_desc : translations.zh.cta_desc;
+                    const ctaInstall = document.querySelector('#download a[data-i18n="cta_install"]');
+                    if (ctaInstall) ctaInstall.textContent = (lang === 'en') ? translations.en.cta_install : translations.zh.cta_install;
+                    const ctaChange = document.querySelectorAll('#download a[href="#"]')[1];
+                    if (ctaChange) ctaChange.textContent = (lang === 'en') ? translations.en.cta_changelog : translations.zh.cta_changelog;
+                    // footer privacy
+                    const privacyLink = document.querySelector('a[data-i18n="privacy"]');
+                    if (privacyLink) privacyLink.textContent = (lang === 'en') ? translations.en.privacy : translations.zh.privacy;
+                }
+
+                // Language toggle UI
+                const nav = document.querySelector('nav .max-w-7xl');
+                if (nav) {
+                    const langWrap = document.createElement('div');
+                    langWrap.className = 'ml-4 flex items-center gap-2';
+                    langWrap.innerHTML = `<button id="lang-zh" class="px-2 py-1 rounded text-sm">中文</button><button id="lang-en" class="px-2 py-1 rounded text-sm">EN</button>`;
+                    nav.querySelector('.flex.items-center.justify-between.h-16').appendChild(langWrap);
+                    document.getElementById('lang-zh').addEventListener('click', () => {
+                        localStorage.setItem('site-lang', 'zh');
+                        applyLanguage('zh');
+                    });
+                    document.getElementById('lang-en').addEventListener('click', () => {
+                        localStorage.setItem('site-lang', 'en');
+                        applyLanguage('en');
+                    });
+                }
+
+                // 自动根据 IP 判断（仅在用户未手动选择的情况下）
+                (function autoDetectLang() {
+                    const stored = localStorage.getItem('site-lang');
+                    if (stored) {
+                        applyLanguage(stored);
+                        return;
+                    }
+                    // 通过 ipapi.co 判断
+                    fetch('https://ipapi.co/json/')
+                        .then(r => r.json())
+                        .then(data => {
+                            const country = (data && data.country) ? data.country.toUpperCase() : 'CN';
+                            if (country === 'CN') applyLanguage('zh');
+                            else applyLanguage('en');
+                        })
+                        .catch(() => {
+                            applyLanguage('zh');
+                        });
+                })();
+            })();
+
+        // Community Overlay Hover Delay Logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const groups = document.querySelectorAll('.group');
+            groups.forEach(group => {
+                const overlay = group.querySelector('.community-overlay');
+                if (!overlay) return;
+
+                let timer;
+
+                group.addEventListener('mouseenter', () => {
+                    clearTimeout(timer);
+                    overlay.classList.add('active');
+                });
+
+                group.addEventListener('mouseleave', () => {
+                    timer = setTimeout(() => {
+                        overlay.classList.remove('active');
+                    }, 500); // 0.5s delay
+                });
+            });
+        });
+    </script>
+
+</body>
+
+</html>

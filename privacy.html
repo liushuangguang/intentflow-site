@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>隐私政策 - IntentFlow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Typography for prose */
+        .prose h1 {
+            @apply text-3xl font-bold mb-6 text-slate-900;
+        }
+
+        .prose h2 {
+            @apply text-2xl font-bold mt-8 mb-4 text-slate-800;
+        }
+
+        .prose h3 {
+            @apply text-xl font-semibold mt-6 mb-3 text-slate-800;
+        }
+
+        .prose p {
+            @apply mb-4 text-slate-600 leading-relaxed;
+        }
+
+        .prose ul {
+            @apply list-disc list-outside ml-6 mb-4 text-slate-600;
+        }
+
+        .prose li {
+            @apply mb-2;
+        }
+
+        .prose strong {
+            @apply font-semibold text-slate-800;
+        }
+
+        .prose a {
+            @apply text-indigo-600 hover:text-indigo-800 underline;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 font-sans text-slate-600 selection:bg-indigo-100 selection:text-indigo-900">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200">
+        <div class="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
+            <a href="./index.html" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                <div
+                    class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">
+                    I</div>
+                <span class="font-bold text-lg text-slate-900">IntentFlow</span>
+            </a>
+            <a href="./index.html" class="text-sm font-medium text-slate-500 hover:text-indigo-600 transition-colors">
+                &larr; 返回首页
+            </a>
+        </div>
+    </header>
+
+    <!-- Content -->
+    <main class="max-w-4xl mx-auto px-6 py-12">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 md:p-12 prose max-w-none">
+
+            <h1 id="privacy-policy-for-intentflow">Privacy Policy for IntentFlow</h1>
+            <p><strong>Last Updated:</strong> January 14, 2026</p>
+            <p>IntentFlow (&quot;we&quot;, &quot;our&quot;, or &quot;us&quot;) respects your privacy. This Privacy Policy describes how we collect, use, and protect your information when you use our Chrome Browser Extension.</p>
+
+            <h2 id="1-no-user-accounts">1. No User Accounts</h2>
+            <p>We do not require you to create an account to use IntentFlow. We do not collect, store, or process your email address, password, or any personally identifiable information (PII) related to your identity.</p>
+
+            <h2 id="2-information-we-collect-process">2. Information We Collect &amp; Process</h2>
+            <p>We strictly limit data processing to what is necessary for the extension's core functionality (Visual Task Flow &amp; AI Analysis).</p>
+
+            <h3 id="a-browsing-website-content-ai-analysis">A. Browsing &amp; Website Content (AI Analysis)</h3>
+            <p>To generate the visual mind map and analyze your browsing intent, the extension processes the following data:</p>
+            <ul>
+                <li><strong>Tab Titles and URLs:</strong> To map the structure of your browsing path.</li>
+                <li><strong>Webpage Text Content:</strong> We use a local parser to extract the main text of the webpage you are viewing.</li>
+                <li><strong>Data Transmission:</strong> This data is transmitted securely via our proxy server (Cloudflare) to the AI provider (Google Gemini) for real-time analysis.</li>
+                <li><strong>No Permanent Storage:</strong> We do not permanently store your browsing history or webpage content on our servers. The analysis results are returned to your browser and stored locally on your device.</li>
+            </ul>
+
+            <h3 id="b-technical-log-data">B. Technical Log Data</h3>
+            <p>When you use the AI features, our security gateway (Cloudflare) may automatically log standard technical information to prevent abuse and ensure API security. This may include:</p>
+            <ul>
+                <li>IP Address (for security and rate limiting only).</li>
+                <li>Request timestamps.</li>
+            </ul>
+
+            <h3 id="c-usage-data-anonymous-analytics">C. Usage Data (Anonymous Analytics)</h3>
+            <p>We use third-party analytics tools (Mixpanel) to understand feature usage trends. We collect strictly anonymous data, such as:</p>
+            <ul>
+                <li>Feature activation counts (e.g., &quot;AI Analysis&quot; clicked).</li>
+                <li>Extension version and browser type.</li>
+            </ul>
+            <p>This data cannot be linked back to you personally.</p>
+
+            <h2 id="3-third-party-services-data-processors">3. Third-Party Services &amp; Data Processors</h2>
+            <p>We utilize the following trusted third-party services to support our infrastructure. All data transmission is encrypted via HTTPS.</p>
+            <ul>
+                <li><strong>Cloudflare:</strong> Acts as a secure API gateway to protect our API keys and proxy requests to the AI model. Cloudflare processes your IP address for security purposes (DDoS protection).</li>
+                <li><strong>Google Gemini AI:</strong> The AI model used to analyze tab intent and content. Text data is sent for processing and is not used to train their models (per API terms).</li>
+                <li><strong>Mixpanel:</strong> Used for anonymous product analytics.</li>
+            </ul>
+
+            <h2 id="4-data-security">4. Data Security</h2>
+            <ul>
+                <li><strong>Local Storage:</strong> Your generated task flows and mind maps are stored locally within your browser (chrome.storage.local).</li>
+                <li><strong>Encryption:</strong> All communication between the extension, Cloudflare, and Google Gemini is encrypted using industry-standard HTTPS protocols (TLS 1.2+).</li>
+            </ul>
+
+            <h2 id="5-children-s-privacy">5. Children's Privacy</h2>
+            <p>IntentFlow is not intended for use by children under the age of 13. We do not knowingly collect personal information from children.</p>
+
+            <h2 id="6-changes-to-this-policy">6. Changes to This Policy</h2>
+            <p>We may update this Privacy Policy from time to time. If we make material changes, we will notify you by updating the date at the top of this policy or through a notification within the extension.</p>
+
+            <h2 id="7-contact-us">7. Contact Us</h2>
+            <p>If you have any questions about this Privacy Policy or our data practices, please contact us at:</p>
+            <p><strong>Email:</strong> <a href="mailto:liushuangguang007@gmail.com">liushuangguang007@gmail.com</a></p>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-50 border-t border-gray-200 mt-12">
+        <div class="max-w-4xl mx-auto py-8 px-6 text-center">
+            <p class="text-sm text-slate-400">
+                &copy; 2026 IntentFlow. All rights reserved.
+            </p>
+        </div>
+    </footer>
+
+</body>
+
+</html>
